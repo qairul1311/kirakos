@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#0a0a0a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="KiraKos" />
+<meta name="description" content="Kira kos sebenar. Free COGS calculator for Malaysian F&B vendors." />
+<title>KiraKos — Kira Kos Sebenar</title>
+
+<link rel="manifest" href='data:application/manifest+json,{"name":"KiraKos","short_name":"KiraKos","start_url":".","display":"standalone","background_color":"%230a0a0a","theme_color":"%230a0a0a","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 rx=%2240%22 fill=%22%2310b981%22/><text x=%2250%25%22 y=%2258%25%22 text-anchor=%22middle%22 font-family=%22system-ui%22 font-weight=%22900%22 font-size=%2296%22 fill=%22%23000%22>K</text></svg>","sizes":"192x192","type":"image/svg+xml"}]}' />
+
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-raised: #141414;
+    --bg-card: #1a1a1a;
+    --bg-input: #222;
+    --border: #2a2a2a;
+    --border-strong: #3a3a3a;
+    --text: #fafafa;
+    --text-muted: #888;
+    --text-dim: #555;
+    --accent: #10b981;
+    --accent-dim: #059669;
+    --good: #22c55e;
+    --warn: #eab308;
+    --bad: #ef4444;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    min-height: 100svh;
+    padding-top: var(--safe-top);
+    padding-bottom: calc(72px + var(--safe-bottom));
+  }
+
+  .header {
+    padding: 14px 18px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: var(--safe-top);
+    z-index: 10;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #000;
+    display: grid; place-items: center;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .brand-name {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+  .brand-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: -2px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .header-btn {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    padding: 6px 10px 6px 6px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    font-weight: 800;
+    font-size: 11px;
+    display: grid; place-items: center;
+    text-transform: uppercase;
+  }
+  .sync-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--good);
+    display: inline-block;
+    margin-right: 4px;
+  }
+  .sync-dot.syncing { background: var(--warn); animation: pulse 1s infinite; }
+  .sync-dot.offline { background: var(--text-dim); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .tabs {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    padding-bottom: var(--safe-bottom);
+    z-index: 20;
+  }
+  .tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    padding: 12px 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.15s;
+  }
+  .tab svg { width: 22px; height: 22px; }
+  .tab.active { color: var(--accent); }
+
+  .content {
+    padding: 16px 16px 24px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 6px 0 4px;
+  }
+  .page-lede {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.05s;
+  }
+  .card:active { transform: scale(0.99); }
+  .card:hover { border-color: var(--border-strong); }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .card-meta {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 3px;
+  }
+  .card-price {
+    font-weight: 700;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+  .card-margin {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+  .margin-good { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .margin-warn { background: rgba(234,179,8,0.15); color: #facc15; }
+  .margin-bad { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .add-btn {
+    position: fixed;
+    right: 18px;
+    bottom: calc(90px + var(--safe-bottom));
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+    z-index: 15;
+  }
+  .add-btn:active { transform: scale(0.95); }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--bg-raised);
+    width: 100%;
+    max-width: 640px;
+    max-height: 92svh;
+    border-radius: 20px 20px 0 0;
+    padding: 8px 0 calc(16px + var(--safe-bottom));
+    overflow-y: auto;
+    animation: slideUp 0.22s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-grabber {
+    width: 36px; height: 4px;
+    background: var(--border-strong);
+    border-radius: 2px;
+    margin: 6px auto 14px;
+  }
+  .modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 18px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .modal-body { padding: 16px 18px 4px; }
+  .modal-close {
+    background: var(--bg-input);
+    border: none;
+    color: var(--text);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: grid; place-items: center;
+    line-height: 1;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 10px;
+  }
+  .field-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 13px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    font-family: inherit;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-danger {
+    background: transparent;
+    color: var(--bad);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .line-items {
+    margin-bottom: 14px;
+  }
+  .line-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .line-item select, .line-item input {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+  }
+  .line-remove {
+    background: transparent;
+    border: none;
+    color: var(--bad);
+    width: 28px; height: 28px;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+  }
+  .add-line {
+    background: transparent;
+    border: 1px dashed var(--border-strong);
+    color: var(--text-muted);
+    padding: 10px;
+    border-radius: var(--radius-sm);
+    width: 100%;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .add-line:hover { color: var(--accent); border-color: var(--accent); }
+
+  .breakdown {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .breakdown h3 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+  .break-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  .break-row .label { color: var(--text-muted); }
+  .break-row .val { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .break-row.total {
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+    padding-top: 10px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .break-row.total .label { color: var(--text); }
+  .break-row.big {
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+    padding-top: 12px;
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .break-row.big .label { color: var(--text); }
+
+  .platform-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .platform-box h3 {
+    margin: 0 0 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+  .platform-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .platform-row:last-child { border-bottom: none; }
+  .platform-name {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .platform-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .platform-val { text-align: right; }
+  .platform-margin {
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .platform-pct {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  .detail-head { margin-bottom: 16px; }
+  .detail-head h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .detail-head p {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0;
+  }
+
+  .banner {
+    background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .banner-icon { font-size: 20px; line-height: 1; margin-top: 2px; }
+  .banner-body {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .banner-body strong { color: var(--accent); }
+  .banner-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .setting-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 16px;
+    margin-bottom: 12px;
+  }
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 14px; font-weight: 500; }
+  .setting-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .setting-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    width: 80px;
+    text-align: right;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin: 18px 0 8px;
+  }
+
+  .list-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin: 18px 0 8px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: calc(100px + var(--safe-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    max-width: 86vw;
+    text-align: center;
+  }
+  .toast.show { opacity: 1; }
+
+  .footer-credit {
+    text-align: center;
+    padding: 24px 16px 8px;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+  .footer-credit a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Auth specific */
+  .auth-hero {
+    text-align: center;
+    padding: 8px 0 18px;
+  }
+  .auth-hero .brand-mark {
+    width: 48px; height: 48px;
+    font-size: 26px;
+    border-radius: 12px;
+    margin: 0 auto 14px;
+  }
+  .auth-hero h2 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .auth-hero p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .otp-input {
+    font-size: 22px !important;
+    text-align: center;
+    letter-spacing: 0.3em;
+    font-family: "SF Mono", ui-monospace, monospace !important;
+  }
+  .auth-footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 16px;
+  }
+  .auth-footer a { color: var(--accent); text-decoration: none; cursor: pointer; }
+
+  .upgrade-prompt {
+    background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.02));
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .upgrade-prompt h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .upgrade-prompt p {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark">K</div>
+    <div>
+      <div class="brand-name">KiraKos</div>
+      <div class="brand-sub">Kira kos sebenar.</div>
+    </div>
+  </div>
+  <div class="header-actions" id="headerActions">
+    <button class="header-btn" id="btnShare">Share</button>
+  </div>
+</header>
+
+<main class="content">
+
+  <section class="page active" id="page-items">
+    <h1 class="page-title">Menu Items</h1>
+    <p class="page-lede">What you sell. Tap any item to see the real cost.</p>
+
+    <div class="banner" id="welcomeBanner">
+      <div class="banner-icon">👋</div>
+      <div class="banner-body">
+        Came from the <strong>viral pancake video</strong>? The data below is a real Koridor Pancakes example. Tap any item to see where every ringgit goes. Or edit it to match your own stall — everything saves on your phone.
+      </div>
+      <button class="banner-close" onclick="dismissBanner()">&times;</button>
+    </div>
+
+    <div id="itemsList"></div>
+  </section>
+
+  <section class="page" id="page-batches">
+    <h1 class="page-title">Batches</h1>
+    <p class="page-lede">A recipe that yields many portions. E.g. pancake batter.</p>
+    <div id="batchesList"></div>
+  </section>
+
+  <section class="page" id="page-ingredients">
+    <h1 class="page-title">Pantry</h1>
+    <p class="page-lede">What you buy. Purchase price ÷ qty = unit cost.</p>
+    <div id="ingredientsList"></div>
+  </section>
+
+  <section class="page" id="page-settings">
+    <h1 class="page-title">Settings</h1>
+    <p class="page-lede">Account, platform fees, and data.</p>
+
+    <div class="list-section-title">Account</div>
+    <div id="accountBox"></div>
+
+    <div class="list-section-title">Platform Commission</div>
+    <div class="setting-group" id="settingsPlatforms"></div>
+
+    <div class="list-section-title">Defaults</div>
+    <div class="setting-group">
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Currency</div>
+          <div class="setting-sub">Display symbol</div>
+        </div>
+        <input class="setting-input" id="setCurrency" value="RM" />
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Default wastage</div>
+          <div class="setting-sub">Applied to new menu items</div>
+        </div>
+        <input class="setting-input" id="setWastage" type="number" value="5" />
+      </div>
+    </div>
+
+    <div class="list-section-title">Data</div>
+    <div class="setting-group">
+      <div class="setting-row" onclick="exportData()" style="cursor:pointer">
+        <div>
+          <div class="setting-label">Export data</div>
+          <div class="setting-sub">Download a JSON backup</div>
+        </div>
+        <span style="color:var(--text-muted)">→</span>
+      </div>
+      <div class="setting-row" onclick="importData()" style="cursor:pointer">
+        <div>
+          <div class="setting-label">Import data</div>
+          <div class="setting-sub">Restore from backup</div>
+        </div>
+        <span style="color:var(--text-muted)">→</span>
+      </div>
+      <div class="setting-row" onclick="resetToDemo()" style="cursor:pointer">
+        <div>
+          <div class="setting-label" style="color:var(--accent)">Reset to demo</div>
+          <div class="setting-sub">Koridor Pancakes sample data</div>
+        </div>
+        <span style="color:var(--accent)">↻</span>
+      </div>
+      <div class="setting-row" onclick="wipeAll()" style="cursor:pointer">
+        <div>
+          <div class="setting-label" style="color:var(--bad)">Clear everything</div>
+          <div class="setting-sub">Start from scratch</div>
+        </div>
+        <span style="color:var(--bad)">⌫</span>
+      </div>
+    </div>
+
+    <div class="footer-credit">
+      <strong>KiraKos</strong> · Made in USJ11 by <a href="https://instagram.com/koridorpancakes" target="_blank">@koridorpancakes</a>
+    </div>
+  </section>
+
+  <section class="page" id="page-detail"></section>
+
+</main>
+
+<button class="add-btn" id="fab" onclick="openAdd()">+</button>
+
+<nav class="tabs">
+  <button class="tab active" data-page="items" onclick="switchTab('items')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+    Items
+  </button>
+  <button class="tab" data-page="batches" onclick="switchTab('batches')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v8"/><path d="M3 21h18"/><path d="M5 21V11h14v10"/></svg>
+    Batches
+  </button>
+  <button class="tab" data-page="ingredients" onclick="switchTab('ingredients')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+    Pantry
+  </button>
+  <button class="tab" data-page="settings" onclick="switchTab('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Setup
+  </button>
+</nav>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal" id="modalInner">
+    <div class="modal-grabber"></div>
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Add</div>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// KiraKos — Kira Kos Sebenar
+// Single-file PWA. localStorage + optional Supabase sync.
+// ═══════════════════════════════════════════════════════════
+
+// ─── SUPABASE CONFIG ───────────────────────────────────────
+// TODO: Paste your KiraKos Supabase project credentials below.
+// Find them at: https://supabase.com/dashboard → Project Settings → API
+// Leave as-is to run in offline-only mode (localStorage).
+const SUPABASE_URL      = 'https://pvmecjnfalwliqhwwozw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2bWVjam5mYWx3bGlxaHd3b3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzA0MDAsImV4cCI6MjA4OTk0NjQwMH0.IiXtfcr-n9oADaiZaW4-M1FrwvgIxthxFv114lbQ0so';
+
+const SUPABASE_ENABLED = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.startsWith('eyJ');
+
+// ─── Storage Keys ──────────────────────────────────────────
+const STORAGE_KEY = 'kirakos_state_v1';
+const SESSION_KEY = 'kirakos_session_v1';
+const BANNER_KEY  = 'kirakos_banner_dismissed';
+
+// ─── Utilities ─────────────────────────────────────────────
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36));
+const escapeHtml = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+
+// ─── Seed data (Koridor Pancakes sample) ───────────────────
+function seedData() {
+  const ing = {
+    flour: { id: uid(), name: 'Plain Flour', price: 4.50, qty: 1000, unit: 'g' },
+    eggs:  { id: uid(), name: 'Eggs',        price: 13.00, qty: 30, unit: 'pcs' },
+    sugar: { id: uid(), name: 'Sugar',       price: 3.20, qty: 1000, unit: 'g' },
+    milk:  { id: uid(), name: 'Fresh Milk',  price: 7.50, qty: 1000, unit: 'ml' },
+    butter:{ id: uid(), name: 'Butter',      price: 12.00, qty: 250, unit: 'g' },
+    bp:    { id: uid(), name: 'Baking Powder', price: 5.00, qty: 200, unit: 'g' },
+    salt:  { id: uid(), name: 'Salt',        price: 2.00, qty: 500, unit: 'g' },
+    vanilla:{ id: uid(), name: 'Vanilla',    price: 8.00, qty: 100, unit: 'ml' },
+    nutella:{ id: uid(), name: 'Nutella',    price: 22.00, qty: 350, unit: 'g' },
+    banana:{ id: uid(), name: 'Banana',      price: 0.80, qty: 1, unit: 'pcs' },
+    peanut:{ id: uid(), name: 'Peanut Butter', price: 14.00, qty: 500, unit: 'g' },
+    kaya:  { id: uid(), name: 'Kaya',        price: 9.00, qty: 400, unit: 'g' },
+    cheese:{ id: uid(), name: 'Cheese Slice',price: 11.00, qty: 20, unit: 'pcs' },
+    choc:  { id: uid(), name: 'Chocolate Rice', price: 6.00, qty: 250, unit: 'g' },
+    box:   { id: uid(), name: 'Kraft Box',   price: 35.00, qty: 100, unit: 'pcs' },
+    cutlery:{ id: uid(), name: 'Fork+Napkin',price: 15.00, qty: 100, unit: 'pcs' },
+    sticker:{ id: uid(), name: 'Brand Sticker', price: 8.00, qty: 100, unit: 'pcs' }
+  };
+  const ingredients = Object.values(ing);
+
+  const batter = {
+    id: uid(),
+    name: 'Pancake Batter',
+    yield: 25,
+    items: [
+      { ingredientId: ing.flour.id, qty: 800 },
+      { ingredientId: ing.eggs.id, qty: 6 },
+      { ingredientId: ing.sugar.id, qty: 120 },
+      { ingredientId: ing.milk.id, qty: 700 },
+      { ingredientId: ing.butter.id, qty: 120 },
+      { ingredientId: ing.bp.id, qty: 20 },
+      { ingredientId: ing.salt.id, qty: 5 },
+      { ingredientId: ing.vanilla.id, qty: 10 }
+    ]
+  };
+
+  const packagingCost = +((ing.box.price/100) + (ing.cutlery.price/100) + (ing.sticker.price/100)).toFixed(2);
+
+  const mkItem = (name, toppings, salePrice) => ({
+    id: uid(), name,
+    batchId: batter.id, batchPortions: 3,
+    toppings, packagingCost, wastagePercent: 5, labourCost: 1.50, salePrice
+  });
+
+  const items = [
+    mkItem('Classic Pancake', [
+      { ingredientId: ing.butter.id, qty: 10 },
+      { ingredientId: ing.sugar.id, qty: 15 }
+    ], 8.00),
+    mkItem('Nutella Banana', [
+      { ingredientId: ing.nutella.id, qty: 30 },
+      { ingredientId: ing.banana.id, qty: 1 }
+    ], 12.00),
+    mkItem('Half / Half Pancake', [
+      { ingredientId: ing.nutella.id, qty: 18 },
+      { ingredientId: ing.peanut.id, qty: 18 },
+      { ingredientId: ing.banana.id, qty: 1 }
+    ], 13.00),
+    mkItem('Kaya Cheese', [
+      { ingredientId: ing.kaya.id, qty: 30 },
+      { ingredientId: ing.cheese.id, qty: 1 }
+    ], 11.00),
+    mkItem('Choc Rice Classic', [
+      { ingredientId: ing.choc.id, qty: 20 },
+      { ingredientId: ing.butter.id, qty: 8 }
+    ], 9.00)
+  ];
+
+  return {
+    ingredients,
+    batches: [batter],
+    items,
+    settings: {
+      currency: 'RM',
+      defaultWastage: 5,
+      platforms: [
+        { id: uid(), name: 'Direct', commission: 0 },
+        { id: uid(), name: 'Foodpanda', commission: 24 },
+        { id: uid(), name: 'GrabFood', commission: 30 }
+      ]
+    }
+  };
+}
+
+// ─── State ─────────────────────────────────────────────────
+let state = loadState();
+let session = loadSession();
+let syncStatus = 'offline'; // 'offline' | 'synced' | 'syncing'
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e){}
+  return seedData();
+}
+function saveStateLocal() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+}
+function loadSession() {
+  try {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e){}
+  return null;
+}
+function saveSession(s) {
+  session = s;
+  try {
+    if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    else localStorage.removeItem(SESSION_KEY);
+  } catch(e){}
+}
+function isSignedIn() {
+  return !!(session && session.access_token && session.user);
+}
+
+// ─── Supabase REST helpers (no SDK) ────────────────────────
+function sbHeaders(useAuth = true) {
+  const h = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  };
+  if (useAuth && session?.access_token) {
+    h['Authorization'] = `Bearer ${session.access_token}`;
+  }
+  return h;
+}
+
+async function sbFetch(path, options = {}) {
+  if (!SUPABASE_ENABLED) throw new Error('Supabase not configured');
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: { ...sbHeaders(), ...(options.headers || {}) }
+  });
+  if (!res.ok) {
+    let msg = res.statusText;
+    try { const e = await res.json(); msg = e.message || e.error_description || e.msg || msg; } catch(_){}
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+// Auth
+async function requestOTP(email) {
+  return sbFetch('/auth/v1/otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify({ email, create_user: true })
+  });
+}
+async function verifyOTP(email, token) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify({ email, token, type: 'email' })
+  });
+  if (!res.ok) {
+    let msg = 'Invalid code';
+    try { const e = await res.json(); msg = e.msg || e.error_description || msg; } catch(_){}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+async function signOut() {
+  if (session?.access_token && SUPABASE_ENABLED) {
+    try {
+      await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+        method: 'POST',
+        headers: sbHeaders()
+      });
+    } catch(e){}
+  }
+  saveSession(null);
+  updateHeader();
+  renderSettings();
+}
+
+// Data sync
+async function cloudPullAll() {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  syncStatus = 'syncing'; updateHeader();
+  try {
+    const [ings, batches, items, settings] = await Promise.all([
+      sbFetch('/rest/v1/kk_ingredients?select=*&order=created_at.asc'),
+      sbFetch('/rest/v1/kk_batches?select=*&order=created_at.asc'),
+      sbFetch('/rest/v1/kk_menu_items?select=*&order=created_at.asc'),
+      sbFetch('/rest/v1/kk_user_settings?select=*')
+    ]);
+
+    const cloudState = {
+      ingredients: (ings||[]).map(r => ({ id: r.id, name: r.name, price: +r.price, qty: +r.qty, unit: r.unit })),
+      batches: (batches||[]).map(r => ({ id: r.id, name: r.name, yield: +r.yield_portions, items: r.items || [] })),
+      items: (items||[]).map(r => ({
+        id: r.id, name: r.name,
+        batchId: r.batch_id, batchPortions: +r.batch_portions,
+        toppings: r.toppings || [],
+        packagingCost: +r.packaging_cost,
+        wastagePercent: +r.wastage_percent,
+        labourCost: +r.labour_cost,
+        salePrice: +r.sale_price
+      })),
+      settings: (settings && settings[0]) ? {
+        currency: settings[0].currency || 'RM',
+        defaultWastage: +settings[0].default_wastage || 5,
+        platforms: settings[0].platforms || []
+      } : state.settings
+    };
+
+    // If cloud is completely empty AND local has data, push local up instead
+    const cloudEmpty = !cloudState.ingredients.length && !cloudState.batches.length && !cloudState.items.length;
+    const localHasData = state.ingredients.length || state.batches.length || state.items.length;
+    if (cloudEmpty && localHasData) {
+      await cloudPushAll();
+    } else {
+      if (!cloudState.settings.platforms.length) cloudState.settings.platforms = state.settings.platforms;
+      state = cloudState;
+      saveStateLocal();
+      render();
+    }
+    syncStatus = 'synced'; updateHeader();
+  } catch(e) {
+    console.warn('Pull failed:', e);
+    syncStatus = 'offline'; updateHeader();
+    toast('Sync issue — using local data');
+  }
+}
+
+async function cloudPushAll() {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  syncStatus = 'syncing'; updateHeader();
+  try {
+    const userId = session.user.id;
+    // Upload in order: ingredients first, then batches, then items
+    if (state.ingredients.length) {
+      await sbFetch('/rest/v1/kk_ingredients', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(state.ingredients.map(i => ({
+          id: i.id, user_id: userId, name: i.name, price: i.price, qty: i.qty, unit: i.unit
+        })))
+      });
+    }
+    if (state.batches.length) {
+      await sbFetch('/rest/v1/kk_batches', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(state.batches.map(b => ({
+          id: b.id, user_id: userId, name: b.name, yield_portions: b.yield, items: b.items
+        })))
+      });
+    }
+    if (state.items.length) {
+      await sbFetch('/rest/v1/kk_menu_items', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(state.items.map(m => ({
+          id: m.id, user_id: userId, name: m.name,
+          batch_id: m.batchId, batch_portions: m.batchPortions,
+          toppings: m.toppings, packaging_cost: m.packagingCost,
+          wastage_percent: m.wastagePercent, labour_cost: m.labourCost,
+          sale_price: m.salePrice
+        })))
+      });
+    }
+    await sbFetch('/rest/v1/kk_user_settings', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        user_id: userId,
+        currency: state.settings.currency,
+        default_wastage: state.settings.defaultWastage,
+        platforms: state.settings.platforms
+      })
+    });
+    syncStatus = 'synced'; updateHeader();
+  } catch(e) {
+    console.warn('Push failed:', e);
+    syncStatus = 'offline'; updateHeader();
+    toast('Cloud sync failed — data saved locally');
+  }
+}
+
+// Per-entity sync (fire-and-forget)
+function cloudUpsertIngredient(i) {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  syncStatus = 'syncing'; updateHeader();
+  sbFetch('/rest/v1/kk_ingredients', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ id: i.id, user_id: session.user.id, name: i.name, price: i.price, qty: i.qty, unit: i.unit })
+  }).then(() => { syncStatus = 'synced'; updateHeader(); })
+    .catch(e => { syncStatus = 'offline'; updateHeader(); });
+}
+function cloudDeleteIngredient(id) {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  sbFetch(`/rest/v1/kk_ingredients?id=eq.${id}`, { method: 'DELETE' }).catch(()=>{});
+}
+function cloudUpsertBatch(b) {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  syncStatus = 'syncing'; updateHeader();
+  sbFetch('/rest/v1/kk_batches', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ id: b.id, user_id: session.user.id, name: b.name, yield_portions: b.yield, items: b.items })
+  }).then(() => { syncStatus = 'synced'; updateHeader(); })
+    .catch(()=>{ syncStatus = 'offline'; updateHeader(); });
+}
+function cloudDeleteBatch(id) {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  sbFetch(`/rest/v1/kk_batches?id=eq.${id}`, { method: 'DELETE' }).catch(()=>{});
+}
+function cloudUpsertItem(m) {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  syncStatus = 'syncing'; updateHeader();
+  sbFetch('/rest/v1/kk_menu_items', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({
+      id: m.id, user_id: session.user.id, name: m.name,
+      batch_id: m.batchId, batch_portions: m.batchPortions,
+      toppings: m.toppings, packaging_cost: m.packagingCost,
+      wastage_percent: m.wastagePercent, labour_cost: m.labourCost,
+      sale_price: m.salePrice
+    })
+  }).then(() => { syncStatus = 'synced'; updateHeader(); })
+    .catch(()=>{ syncStatus = 'offline'; updateHeader(); });
+}
+function cloudDeleteItem(id) {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  sbFetch(`/rest/v1/kk_menu_items?id=eq.${id}`, { method: 'DELETE' }).catch(()=>{});
+}
+function cloudUpsertSettings() {
+  if (!isSignedIn() || !SUPABASE_ENABLED) return;
+  sbFetch('/rest/v1/kk_user_settings', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({
+      user_id: session.user.id,
+      currency: state.settings.currency,
+      default_wastage: state.settings.defaultWastage,
+      platforms: state.settings.platforms
+    })
+  }).catch(()=>{});
+}
+
+// ─── Calc ──────────────────────────────────────────────────
+function getIng(id) { return state.ingredients.find(i => i.id === id); }
+function ingUnitCost(ing) {
+  if (!ing || !ing.qty) return 0;
+  return ing.price / ing.qty;
+}
+function batchCost(b) {
+  if (!b) return 0;
+  return b.items.reduce((sum, line) => {
+    const ing = getIng(line.ingredientId);
+    return sum + ingUnitCost(ing) * (line.qty || 0);
+  }, 0);
+}
+function batchCostPerPortion(b) {
+  if (!b || !b.yield) return 0;
+  return batchCost(b) / b.yield;
+}
+function getBatch(id) { return state.batches.find(b => b.id === id); }
+
+function itemBreakdown(item) {
+  const batch = getBatch(item.batchId);
+  const batchPortionCost = batchCostPerPortion(batch);
+  const batchPart = batchPortionCost * (item.batchPortions || 1);
+  const toppingsCost = (item.toppings || []).reduce((sum, t) => {
+    return sum + ingUnitCost(getIng(t.ingredientId)) * (t.qty || 0);
+  }, 0);
+  const packaging = item.packagingCost || 0;
+  const labour = item.labourCost || 0;
+  const subtotal = batchPart + toppingsCost + packaging + labour;
+  const wastage = subtotal * ((item.wastagePercent || 0) / 100);
+  const totalCost = subtotal + wastage;
+  const margin = (item.salePrice || 0) - totalCost;
+  const marginPct = item.salePrice ? (margin / item.salePrice) * 100 : 0;
+  return {
+    batchPart, toppingsCost, packaging, labour, wastage,
+    subtotal, totalCost, margin, marginPct,
+    batchName: batch ? batch.name : null,
+    batchPortionCost
+  };
+}
+
+function platformMargin(item, commissionPct) {
+  const bd = itemBreakdown(item);
+  const received = (item.salePrice || 0) * (1 - commissionPct/100);
+  const margin = received - bd.totalCost;
+  const marginPct = item.salePrice ? (margin / item.salePrice) * 100 : 0;
+  return { received, margin, marginPct };
+}
+
+function fmt(n) {
+  const cur = state.settings.currency || 'RM';
+  return `${cur} ${(n||0).toFixed(2)}`;
+}
+function fmtPct(n) { return `${(n||0).toFixed(1)}%`; }
+
+function marginClass(pct) {
+  if (pct >= 50) return 'margin-good';
+  if (pct >= 25) return 'margin-warn';
+  return 'margin-bad';
+}
+
+// ─── Rendering ─────────────────────────────────────────────
+function render() {
+  renderItems();
+  renderBatches();
+  renderIngredients();
+  renderSettings();
+  updateHeader();
+}
+
+function updateHeader() {
+  const el = document.getElementById('headerActions');
+  let html = '';
+  if (isSignedIn() && SUPABASE_ENABLED) {
+    const initial = (session.user.email || '?').charAt(0).toUpperCase();
+    const dotClass = syncStatus === 'syncing' ? 'syncing' : (syncStatus === 'synced' ? '' : 'offline');
+    html = `
+      <button class="user-chip" onclick="switchTab('settings')">
+        <div class="user-avatar">${initial}</div>
+        <span><span class="sync-dot ${dotClass}"></span>${syncStatus==='syncing'?'Syncing':syncStatus==='synced'?'Synced':'Offline'}</span>
+      </button>
+      <button class="header-btn" id="btnShare">Share</button>
+    `;
+  } else if (SUPABASE_ENABLED) {
+    html = `
+      <button class="header-btn" onclick="openAuth()" style="color:var(--accent);border-color:rgba(16,185,129,0.35)">Sign in</button>
+      <button class="header-btn" id="btnShare">Share</button>
+    `;
+  } else {
+    html = `<button class="header-btn" id="btnShare">Share</button>`;
+  }
+  el.innerHTML = html;
+  const btn = document.getElementById('btnShare');
+  if (btn) btn.onclick = shareApp;
+}
+
+function renderItems() {
+  const list = document.getElementById('itemsList');
+  if (!state.items.length) {
+    list.innerHTML = '<div class="empty">No menu items yet.<br/>Tap + to add one.</div>';
+    return;
+  }
+  list.innerHTML = state.items.map(item => {
+    const bd = itemBreakdown(item);
+    return `
+      <div class="card" onclick="showDetail('${item.id}')">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${escapeHtml(item.name)}</div>
+            <div class="card-meta">Cost ${fmt(bd.totalCost)} · Sells ${fmt(item.salePrice)}</div>
+            <div class="card-margin ${marginClass(bd.marginPct)}">${bd.margin >= 0 ? '+' : ''}${fmt(bd.margin)} · ${fmtPct(bd.marginPct)} margin</div>
+          </div>
+          <div style="color:var(--text-dim);font-size:20px">›</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderBatches() {
+  const list = document.getElementById('batchesList');
+  if (!state.batches.length) {
+    list.innerHTML = '<div class="empty">No batches yet.<br/>Tap + to create a recipe batch.</div>';
+    return;
+  }
+  list.innerHTML = state.batches.map(b => {
+    const cost = batchCost(b);
+    const perPortion = batchCostPerPortion(b);
+    return `
+      <div class="card" onclick="editBatch('${b.id}')">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${escapeHtml(b.name)}</div>
+            <div class="card-meta">Yields ${b.yield} portions · ${b.items.length} ingredients</div>
+            <div class="card-meta" style="margin-top:4px">Total ${fmt(cost)} · ${fmt(perPortion)}/portion</div>
+          </div>
+          <div style="color:var(--text-dim);font-size:20px">›</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderIngredients() {
+  const list = document.getElementById('ingredientsList');
+  if (!state.ingredients.length) {
+    list.innerHTML = '<div class="empty">No ingredients yet.<br/>Tap + to add what you buy.</div>';
+    return;
+  }
+  list.innerHTML = state.ingredients.map(i => {
+    const unitCost = ingUnitCost(i);
+    return `
+      <div class="card" onclick="editIngredient('${i.id}')">
+        <div class="card-row">
+          <div>
+            <div class="card-title">${escapeHtml(i.name)}</div>
+            <div class="card-meta">${fmt(i.price)} for ${i.qty} ${i.unit}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="card-price">${fmt(unitCost)}</div>
+            <div class="card-meta">per ${i.unit}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSettings() {
+  // Account box
+  const accBox = document.getElementById('accountBox');
+  if (!SUPABASE_ENABLED) {
+    accBox.innerHTML = `
+      <div class="setting-group">
+        <div class="setting-row" style="display:block">
+          <div class="setting-label">Cloud sync</div>
+          <div class="setting-sub" style="margin-top:6px;line-height:1.5">
+            Not configured yet. Data stays on this device. Configure <code style="background:var(--bg-input);padding:2px 5px;border-radius:4px;font-size:11px">SUPABASE_URL</code> at the top of the HTML to enable.
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (isSignedIn()) {
+    const dotClass = syncStatus === 'syncing' ? 'syncing' : (syncStatus === 'synced' ? '' : 'offline');
+    accBox.innerHTML = `
+      <div class="setting-group">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Signed in as</div>
+            <div class="setting-sub">${escapeHtml(session.user.email || '')}</div>
+          </div>
+          <span class="sync-dot ${dotClass}"></span>
+        </div>
+        <div class="setting-row" onclick="cloudPullAll()" style="cursor:pointer">
+          <div>
+            <div class="setting-label">Pull from cloud</div>
+            <div class="setting-sub">Replace local with cloud data</div>
+          </div>
+          <span style="color:var(--text-muted)">↓</span>
+        </div>
+        <div class="setting-row" onclick="cloudPushAll().then(()=>toast('Pushed to cloud'))" style="cursor:pointer">
+          <div>
+            <div class="setting-label">Push to cloud</div>
+            <div class="setting-sub">Upload local to cloud</div>
+          </div>
+          <span style="color:var(--text-muted)">↑</span>
+        </div>
+        <div class="setting-row" onclick="confirmSignOut()" style="cursor:pointer">
+          <div>
+            <div class="setting-label" style="color:var(--bad)">Sign out</div>
+            <div class="setting-sub">Keep local data</div>
+          </div>
+          <span style="color:var(--bad)">→</span>
+        </div>
+      </div>
+    `;
+  } else {
+    accBox.innerHTML = `
+      <div class="upgrade-prompt">
+        <h3>☁️ Save to cloud, access anywhere</h3>
+        <p>Sign in free with your email. Your ingredients, batches, and menu items sync across your phone, iPad, laptop.</p>
+        <button class="btn" onclick="openAuth()">Sign in with email</button>
+      </div>
+    `;
+  }
+
+  // Platforms
+  const box = document.getElementById('settingsPlatforms');
+  box.innerHTML = state.settings.platforms.map(p => `
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">${escapeHtml(p.name)}</div>
+        <div class="setting-sub">Commission %</div>
+      </div>
+      <input class="setting-input" type="number" min="0" max="100" step="0.5"
+        value="${p.commission}"
+        onchange="updatePlatform('${p.id}', this.value)" />
+    </div>
+  `).join('') + `
+    <div class="setting-row" onclick="addPlatform()" style="cursor:pointer">
+      <div><div class="setting-label" style="color:var(--accent)">+ Add platform</div></div>
+      <span style="color:var(--accent)">+</span>
+    </div>
+  `;
+  document.getElementById('setCurrency').value = state.settings.currency;
+  document.getElementById('setWastage').value = state.settings.defaultWastage;
+}
+
+// ─── Auth UI ───────────────────────────────────────────────
+let authEmail = '';
+
+function openAuth() {
+  openModal('Sign in to KiraKos', `
+    <div class="auth-hero">
+      <div class="brand-mark">K</div>
+      <h2>Sign in with email</h2>
+      <p>We'll send you a 6-digit code. No password.</p>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input id="authEmail" type="email" placeholder="you@email.com" autocomplete="email" value="${escapeHtml(authEmail)}" />
+    </div>
+    <button class="btn" id="authSendBtn" onclick="sendAuthCode()">Send code</button>
+    <div class="auth-footer">Free. No spam. Your data is private.</div>
+  `);
+  setTimeout(() => { const e = document.getElementById('authEmail'); if (e) e.focus(); }, 50);
+}
+
+async function sendAuthCode() {
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { toast('Enter a valid email'); return; }
+  authEmail = email;
+  const btn = document.getElementById('authSendBtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await requestOTP(email);
+    openOTPEntry();
+  } catch(e) {
+    toast(e.message || 'Failed to send code');
+    btn.disabled = false; btn.textContent = 'Send code';
+  }
+}
+
+function openOTPEntry() {
+  document.getElementById('modalTitle').textContent = 'Enter code';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="auth-hero">
+      <div class="brand-mark">K</div>
+      <h2>Check your email</h2>
+      <p>We sent a 6-digit code to<br/><strong style="color:var(--text)">${escapeHtml(authEmail)}</strong></p>
+    </div>
+    <div class="field">
+      <label>6-digit code</label>
+      <input id="authOtp" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="••••••" autocomplete="one-time-code" />
+    </div>
+    <button class="btn" id="authVerifyBtn" onclick="verifyAuthCode()">Verify & sign in</button>
+    <div class="auth-footer">
+      Didn't get it? <a onclick="openAuth()">Use different email</a>
+    </div>
+  `;
+  setTimeout(() => { const e = document.getElementById('authOtp'); if (e) e.focus(); }, 50);
+}
+
+async function verifyAuthCode() {
+  const token = document.getElementById('authOtp').value.trim();
+  if (token.length !== 6) { toast('Enter the 6-digit code'); return; }
+  const btn = document.getElementById('authVerifyBtn');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+  try {
+    const data = await verifyOTP(authEmail, token);
+    saveSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      user: data.user,
+      expires_at: data.expires_at
+    });
+    closeModal();
+    toast('Signed in');
+    updateHeader();
+    await cloudPullAll();
+    renderSettings();
+  } catch(e) {
+    toast(e.message || 'Invalid code');
+    btn.disabled = false; btn.textContent = 'Verify & sign in';
+  }
+}
+
+function confirmSignOut() {
+  if (!confirm('Sign out? Your local data stays on this device.')) return;
+  signOut().then(() => toast('Signed out'));
+}
+
+// ─── Detail View ───────────────────────────────────────────
+let currentDetailId = null;
+
+function showDetail(itemId) {
+  currentDetailId = itemId;
+  const item = state.items.find(i => i.id === itemId);
+  if (!item) return;
+  const bd = itemBreakdown(item);
+
+  const platformsHtml = state.settings.platforms.map(p => {
+    const pm = platformMargin(item, p.commission);
+    return `
+      <div class="platform-row">
+        <div>
+          <div class="platform-name">${escapeHtml(p.name)}</div>
+          <div class="platform-sub">${p.commission}% commission</div>
+        </div>
+        <div class="platform-val">
+          <div class="platform-margin" style="color:${pm.margin >= 0 ? 'var(--good)' : 'var(--bad)'}">${pm.margin >= 0 ? '+' : ''}${fmt(pm.margin)}</div>
+          <div class="platform-pct">${fmtPct(pm.marginPct)} margin</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const toppingsList = (item.toppings || []).map(t => {
+    const ing = getIng(t.ingredientId);
+    if (!ing) return '';
+    const cost = ingUnitCost(ing) * t.qty;
+    return `<div class="break-row"><span class="label">&nbsp;&nbsp;${escapeHtml(ing.name)} (${t.qty}${ing.unit})</span><span class="val">${fmt(cost)}</span></div>`;
+  }).join('');
+
+  document.getElementById('page-detail').innerHTML = `
+    <button class="back-btn" onclick="switchTab('items')">← Back to items</button>
+
+    <div class="detail-head">
+      <h2>${escapeHtml(item.name)}</h2>
+      <p>Sells at <strong style="color:var(--text)">${fmt(item.salePrice)}</strong> · True cost <strong style="color:var(--text)">${fmt(bd.totalCost)}</strong></p>
+    </div>
+
+    <div class="breakdown">
+      <h3>Cost Breakdown</h3>
+      ${bd.batchName ? `<div class="break-row"><span class="label">${escapeHtml(bd.batchName)} (${item.batchPortions} portion${item.batchPortions>1?'s':''})</span><span class="val">${fmt(bd.batchPart)}</span></div>` : ''}
+      ${toppingsList ? `<div class="break-row"><span class="label">Toppings</span><span class="val">${fmt(bd.toppingsCost)}</span></div>${toppingsList}` : ''}
+      <div class="break-row"><span class="label">Packaging</span><span class="val">${fmt(bd.packaging)}</span></div>
+      <div class="break-row"><span class="label">Labour</span><span class="val">${fmt(bd.labour)}</span></div>
+      <div class="break-row"><span class="label">Wastage (${item.wastagePercent}%)</span><span class="val">${fmt(bd.wastage)}</span></div>
+      <div class="break-row big"><span class="label">True Cost</span><span class="val">${fmt(bd.totalCost)}</span></div>
+    </div>
+
+    <div class="breakdown">
+      <h3>Direct Sale Margin</h3>
+      <div class="break-row"><span class="label">Sale price</span><span class="val">${fmt(item.salePrice)}</span></div>
+      <div class="break-row"><span class="label">True cost</span><span class="val">−${fmt(bd.totalCost)}</span></div>
+      <div class="break-row total"><span class="label">Margin</span><span class="val" style="color:${bd.margin>=0?'var(--good)':'var(--bad)'}">${bd.margin>=0?'+':''}${fmt(bd.margin)} (${fmtPct(bd.marginPct)})</span></div>
+    </div>
+
+    <div class="platform-box">
+      <h3>What's Left After Platforms</h3>
+      ${platformsHtml}
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="editItem('${item.id}')">Edit</button>
+      <button class="btn" onclick="shareItem('${item.id}')">Share this</button>
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn btn-danger" onclick="deleteItem('${item.id}')">Delete item</button>
+    </div>
+  `;
+  switchTab('detail', true);
+}
+
+// ─── Tab switching ─────────────────────────────────────────
+function switchTab(page, hideFromTabBar = false) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.page === page);
+  });
+
+  const fab = document.getElementById('fab');
+  fab.style.display = (page === 'items' || page === 'batches' || page === 'ingredients') ? 'block' : 'none';
+
+  window.scrollTo(0, 0);
+}
+
+// ─── Modal ─────────────────────────────────────────────────
+function openModal(title, bodyHtml) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+// ─── Add router ────────────────────────────────────────────
+function openAdd() {
+  const active = document.querySelector('.page.active').id;
+  if (active === 'page-items') openItemForm();
+  else if (active === 'page-batches') openBatchForm();
+  else if (active === 'page-ingredients') openIngredientForm();
+}
+
+// ─── Ingredient form ───────────────────────────────────────
+function openIngredientForm(id) {
+  const existing = id ? state.ingredients.find(i => i.id === id) : null;
+  const title = existing ? 'Edit Ingredient' : 'Add Ingredient';
+  openModal(title, `
+    <div class="field">
+      <label>Name</label>
+      <input id="f-ing-name" placeholder="e.g. Flour" value="${escapeHtml(existing?.name || '')}" />
+    </div>
+    <div class="field">
+      <label>Purchase Price (${state.settings.currency})</label>
+      <input id="f-ing-price" type="number" step="0.01" placeholder="4.50" value="${existing?.price || ''}" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Purchase Quantity</label>
+        <input id="f-ing-qty" type="number" step="0.01" placeholder="1000" value="${existing?.qty || ''}" />
+      </div>
+      <div class="field">
+        <label>Unit</label>
+        <select id="f-ing-unit">
+          <option value="g" ${existing?.unit==='g'?'selected':''}>g</option>
+          <option value="kg" ${existing?.unit==='kg'?'selected':''}>kg</option>
+          <option value="ml" ${existing?.unit==='ml'?'selected':''}>ml</option>
+          <option value="l" ${existing?.unit==='l'?'selected':''}>l</option>
+          <option value="pcs" ${existing?.unit==='pcs'?'selected':''}>pcs</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      ${existing ? `<button class="btn btn-danger" onclick="deleteIngredient('${id}')">Delete</button>` : `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`}
+      <button class="btn" onclick="saveIngredient('${id || ''}')">Save</button>
+    </div>
+  `);
+}
+function editIngredient(id) { openIngredientForm(id); }
+function saveIngredient(id) {
+  const name = document.getElementById('f-ing-name').value.trim();
+  const price = parseFloat(document.getElementById('f-ing-price').value) || 0;
+  const qty = parseFloat(document.getElementById('f-ing-qty').value) || 0;
+  const unit = document.getElementById('f-ing-unit').value;
+  if (!name || !price || !qty) { toast('Fill in all fields'); return; }
+  let ing;
+  if (id) {
+    ing = state.ingredients.find(i => i.id === id);
+    Object.assign(ing, { name, price, qty, unit });
+  } else {
+    ing = { id: uid(), name, price, qty, unit };
+    state.ingredients.push(ing);
+  }
+  saveStateLocal(); render(); closeModal();
+  cloudUpsertIngredient(ing);
+}
+function deleteIngredient(id) {
+  if (!confirm('Delete this ingredient?')) return;
+  state.ingredients = state.ingredients.filter(i => i.id !== id);
+  saveStateLocal(); render(); closeModal();
+  cloudDeleteIngredient(id);
+}
+
+// ─── Batch form ────────────────────────────────────────────
+let batchDraft = null;
+
+function openBatchForm(id) {
+  const existing = id ? state.batches.find(b => b.id === id) : null;
+  batchDraft = existing
+    ? JSON.parse(JSON.stringify(existing))
+    : { id: null, name: '', yield: 10, items: [] };
+
+  const title = existing ? 'Edit Batch' : 'Add Batch';
+  openModal(title, batchFormHtml());
+}
+function editBatch(id) { openBatchForm(id); }
+
+function batchFormHtml() {
+  const cost = state.ingredients.length ? batchCost(batchDraft) : 0;
+  const perPortion = batchDraft.yield ? cost / batchDraft.yield : 0;
+  const linesHtml = batchDraft.items.map((line, idx) => {
+    const ing = getIng(line.ingredientId);
+    return `
+      <div class="line-item">
+        <select onchange="batchLineChange(${idx}, 'ingredientId', this.value)">
+          ${state.ingredients.map(i => `<option value="${i.id}" ${i.id===line.ingredientId?'selected':''}>${escapeHtml(i.name)} (${fmt(ingUnitCost(i))}/${i.unit})</option>`).join('')}
+        </select>
+        <input type="number" step="0.01" value="${line.qty}" placeholder="qty ${ing?.unit||''}"
+          onchange="batchLineChange(${idx}, 'qty', this.value)" />
+        <button class="line-remove" onclick="batchLineRemove(${idx})">×</button>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="field">
+      <label>Batch Name</label>
+      <input id="f-batch-name" placeholder="e.g. Pancake Batter" value="${escapeHtml(batchDraft.name)}"
+        oninput="batchDraft.name=this.value" />
+    </div>
+    <div class="field">
+      <label>Yields how many portions?</label>
+      <input id="f-batch-yield" type="number" step="1" value="${batchDraft.yield}"
+        oninput="batchDraft.yield=parseFloat(this.value)||0; refreshBatchMeta()" />
+    </div>
+    <div class="section-title">Ingredients in this batch</div>
+    <div class="line-items" id="batchLines">
+      ${linesHtml || '<div style="color:var(--text-dim);font-size:13px;padding:4px 0 12px">No ingredients yet.</div>'}
+    </div>
+    ${state.ingredients.length ? `<button class="add-line" onclick="batchLineAdd()">+ Add ingredient</button>` : '<div style="color:var(--text-dim);font-size:13px;text-align:center;padding:10px">Add ingredients in Pantry tab first.</div>'}
+
+    <div class="breakdown" style="margin-top:16px" id="batchMeta">
+      <div class="break-row"><span class="label">Total batch cost</span><span class="val">${fmt(cost)}</span></div>
+      <div class="break-row total"><span class="label">Cost per portion</span><span class="val">${fmt(perPortion)}</span></div>
+    </div>
+
+    <div class="btn-row">
+      ${batchDraft.id ? `<button class="btn btn-danger" onclick="deleteBatch('${batchDraft.id}')">Delete</button>` : `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`}
+      <button class="btn" onclick="saveBatch()">Save Batch</button>
+    </div>
+  `;
+}
+function refreshBatchMeta() {
+  const cost = batchCost(batchDraft);
+  const per = batchDraft.yield ? cost / batchDraft.yield : 0;
+  const meta = document.getElementById('batchMeta');
+  if (meta) meta.innerHTML = `
+    <div class="break-row"><span class="label">Total batch cost</span><span class="val">${fmt(cost)}</span></div>
+    <div class="break-row total"><span class="label">Cost per portion</span><span class="val">${fmt(per)}</span></div>
+  `;
+}
+function batchLineAdd() {
+  if (!state.ingredients.length) return;
+  batchDraft.items.push({ ingredientId: state.ingredients[0].id, qty: 0 });
+  document.getElementById('modalBody').innerHTML = batchFormHtml();
+}
+function batchLineRemove(idx) {
+  batchDraft.items.splice(idx, 1);
+  document.getElementById('modalBody').innerHTML = batchFormHtml();
+}
+function batchLineChange(idx, field, val) {
+  if (field === 'qty') val = parseFloat(val) || 0;
+  batchDraft.items[idx][field] = val;
+  refreshBatchMeta();
+}
+function saveBatch() {
+  if (!batchDraft.name.trim()) { toast('Give the batch a name'); return; }
+  if (!batchDraft.yield || batchDraft.yield <= 0) { toast('Set yield > 0'); return; }
+  let saved;
+  if (batchDraft.id) {
+    const b = state.batches.find(x => x.id === batchDraft.id);
+    Object.assign(b, batchDraft);
+    saved = b;
+  } else {
+    batchDraft.id = uid();
+    saved = {...batchDraft};
+    state.batches.push(saved);
+  }
+  saveStateLocal(); render(); closeModal();
+  cloudUpsertBatch(saved);
+}
+function deleteBatch(id) {
+  if (!confirm('Delete this batch?')) return;
+  state.batches = state.batches.filter(b => b.id !== id);
+  state.items.forEach(i => { if (i.batchId === id) { i.batchId = null; cloudUpsertItem(i); } });
+  saveStateLocal(); render(); closeModal();
+  cloudDeleteBatch(id);
+}
+
+// ─── Item form ─────────────────────────────────────────────
+let itemDraft = null;
+
+function openItemForm(id) {
+  const existing = id ? state.items.find(i => i.id === id) : null;
+  itemDraft = existing
+    ? JSON.parse(JSON.stringify(existing))
+    : {
+        id: null, name: '',
+        batchId: state.batches[0]?.id || null,
+        batchPortions: 1,
+        toppings: [],
+        packagingCost: 0,
+        wastagePercent: state.settings.defaultWastage,
+        labourCost: 0,
+        salePrice: 0
+      };
+  openModal(existing ? 'Edit Menu Item' : 'Add Menu Item', itemFormHtml());
+}
+function editItem(id) { openItemForm(id); }
+
+function itemFormHtml() {
+  const toppingsHtml = (itemDraft.toppings || []).map((t, idx) => {
+    const ing = getIng(t.ingredientId);
+    return `
+      <div class="line-item">
+        <select onchange="toppingChange(${idx}, 'ingredientId', this.value)">
+          ${state.ingredients.map(i => `<option value="${i.id}" ${i.id===t.ingredientId?'selected':''}>${escapeHtml(i.name)} (${fmt(ingUnitCost(i))}/${i.unit})</option>`).join('')}
+        </select>
+        <input type="number" step="0.01" value="${t.qty}" placeholder="qty ${ing?.unit||''}"
+          onchange="toppingChange(${idx}, 'qty', this.value)" />
+        <button class="line-remove" onclick="toppingRemove(${idx})">×</button>
+      </div>
+    `;
+  }).join('');
+
+  const batchOptions = state.batches.map(b =>
+    `<option value="${b.id}" ${b.id===itemDraft.batchId?'selected':''}>${escapeHtml(b.name)} (${fmt(batchCostPerPortion(b))}/portion)</option>`
+  ).join('');
+
+  return `
+    <div class="field">
+      <label>Item Name</label>
+      <input id="f-item-name" placeholder="e.g. Nutella Banana" value="${escapeHtml(itemDraft.name)}"
+        oninput="itemDraft.name=this.value" />
+    </div>
+    <div class="field">
+      <label>Sale Price (${state.settings.currency})</label>
+      <input type="number" step="0.01" value="${itemDraft.salePrice}"
+        oninput="itemDraft.salePrice=parseFloat(this.value)||0; refreshItemMeta()" />
+    </div>
+
+    <div class="section-title">Base (from a batch)</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Batch</label>
+        <select onchange="itemDraft.batchId=this.value; refreshItemMeta()">
+          <option value="">— none —</option>
+          ${batchOptions}
+        </select>
+      </div>
+      <div class="field">
+        <label>Portions used</label>
+        <input type="number" step="0.5" value="${itemDraft.batchPortions}"
+          oninput="itemDraft.batchPortions=parseFloat(this.value)||0; refreshItemMeta()" />
+      </div>
+    </div>
+
+    <div class="section-title">Toppings / Add-ons</div>
+    <div class="line-items">
+      ${toppingsHtml || '<div style="color:var(--text-dim);font-size:13px;padding:4px 0 12px">No toppings.</div>'}
+    </div>
+    ${state.ingredients.length ? `<button class="add-line" onclick="toppingAdd()">+ Add topping</button>` : ''}
+
+    <div class="section-title">Other Costs</div>
+    <div class="field-row-3">
+      <div class="field">
+        <label>Packaging</label>
+        <input type="number" step="0.01" value="${itemDraft.packagingCost}"
+          oninput="itemDraft.packagingCost=parseFloat(this.value)||0; refreshItemMeta()" />
+      </div>
+      <div class="field">
+        <label>Labour</label>
+        <input type="number" step="0.01" value="${itemDraft.labourCost}"
+          oninput="itemDraft.labourCost=parseFloat(this.value)||0; refreshItemMeta()" />
+      </div>
+      <div class="field">
+        <label>Wastage %</label>
+        <input type="number" step="0.5" value="${itemDraft.wastagePercent}"
+          oninput="itemDraft.wastagePercent=parseFloat(this.value)||0; refreshItemMeta()" />
+      </div>
+    </div>
+
+    <div class="breakdown" id="itemMeta">${itemMetaHtml()}</div>
+
+    <div class="btn-row">
+      ${itemDraft.id ? `<button class="btn btn-danger" onclick="deleteItem('${itemDraft.id}')">Delete</button>` : `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>`}
+      <button class="btn" onclick="saveItem()">Save</button>
+    </div>
+  `;
+}
+function itemMetaHtml() {
+  const bd = itemBreakdown(itemDraft);
+  return `
+    <div class="break-row"><span class="label">True cost</span><span class="val">${fmt(bd.totalCost)}</span></div>
+    <div class="break-row"><span class="label">Sale price</span><span class="val">${fmt(itemDraft.salePrice)}</span></div>
+    <div class="break-row total">
+      <span class="label">Margin</span>
+      <span class="val" style="color:${bd.margin>=0?'var(--good)':'var(--bad)'}">${bd.margin>=0?'+':''}${fmt(bd.margin)} (${fmtPct(bd.marginPct)})</span>
+    </div>
+  `;
+}
+function refreshItemMeta() {
+  const meta = document.getElementById('itemMeta');
+  if (meta) meta.innerHTML = itemMetaHtml();
+}
+function toppingAdd() {
+  itemDraft.toppings.push({ ingredientId: state.ingredients[0].id, qty: 0 });
+  document.getElementById('modalBody').innerHTML = itemFormHtml();
+}
+function toppingRemove(idx) {
+  itemDraft.toppings.splice(idx, 1);
+  document.getElementById('modalBody').innerHTML = itemFormHtml();
+}
+function toppingChange(idx, field, val) {
+  if (field === 'qty') val = parseFloat(val) || 0;
+  itemDraft.toppings[idx][field] = val;
+  refreshItemMeta();
+}
+function saveItem() {
+  if (!itemDraft.name.trim()) { toast('Give the item a name'); return; }
+  let saved;
+  if (itemDraft.id) {
+    const item = state.items.find(i => i.id === itemDraft.id);
+    Object.assign(item, itemDraft);
+    saved = item;
+  } else {
+    itemDraft.id = uid();
+    saved = {...itemDraft};
+    state.items.push(saved);
+  }
+  saveStateLocal(); render(); closeModal();
+  cloudUpsertItem(saved);
+  setTimeout(() => showDetail(saved.id), 100);
+}
+function deleteItem(id) {
+  if (!confirm('Delete this menu item?')) return;
+  state.items = state.items.filter(i => i.id !== id);
+  saveStateLocal(); render(); closeModal();
+  switchTab('items');
+  cloudDeleteItem(id);
+}
+
+// ─── Settings ops ──────────────────────────────────────────
+function updatePlatform(id, val) {
+  const p = state.settings.platforms.find(x => x.id === id);
+  if (p) {
+    p.commission = parseFloat(val) || 0;
+    saveStateLocal();
+    cloudUpsertSettings();
+    if (document.getElementById('page-detail').classList.contains('active') && currentDetailId) {
+      showDetail(currentDetailId);
+    }
+  }
+}
+function addPlatform() {
+  const name = prompt('Platform name?');
+  if (!name) return;
+  const commission = parseFloat(prompt('Commission %?', '20')) || 0;
+  state.settings.platforms.push({ id: uid(), name: name.trim(), commission });
+  saveStateLocal(); renderSettings();
+  cloudUpsertSettings();
+}
+document.getElementById('setCurrency').addEventListener('change', e => {
+  state.settings.currency = e.target.value.trim() || 'RM';
+  saveStateLocal(); render();
+  cloudUpsertSettings();
+});
+document.getElementById('setWastage').addEventListener('change', e => {
+  state.settings.defaultWastage = parseFloat(e.target.value) || 0;
+  saveStateLocal();
+  cloudUpsertSettings();
+});
+
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kirakos-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Exported');
+}
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!data.ingredients || !data.items) throw new Error('Invalid');
+        state = data;
+        saveStateLocal(); render();
+        if (isSignedIn()) cloudPushAll();
+        toast('Imported');
+      } catch(err) { toast('Invalid file'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+function resetToDemo() {
+  if (!confirm('Reset everything to Koridor demo data? This will overwrite your current data.')) return;
+  state = seedData();
+  saveStateLocal(); render();
+  switchTab('items');
+  if (isSignedIn()) cloudPushAll();
+  toast('Reset to demo');
+}
+function wipeAll() {
+  if (!confirm('Clear all data? You will start from an empty state.')) return;
+  // Delete from cloud if signed in
+  if (isSignedIn() && SUPABASE_ENABLED) {
+    const userId = session.user.id;
+    Promise.all([
+      sbFetch(`/rest/v1/kk_menu_items?user_id=eq.${userId}`, { method: 'DELETE' }),
+      sbFetch(`/rest/v1/kk_batches?user_id=eq.${userId}`, { method: 'DELETE' }),
+      sbFetch(`/rest/v1/kk_ingredients?user_id=eq.${userId}`, { method: 'DELETE' })
+    ]).catch(()=>{});
+  }
+  state = {
+    ingredients: [], batches: [], items: [],
+    settings: {
+      currency: 'RM',
+      defaultWastage: 5,
+      platforms: [
+        { id: uid(), name: 'Direct', commission: 0 },
+        { id: uid(), name: 'Foodpanda', commission: 24 },
+        { id: uid(), name: 'GrabFood', commission: 30 }
+      ]
+    }
+  };
+  saveStateLocal(); render();
+  switchTab('items');
+  toast('Cleared');
+}
+
+// ─── Share ─────────────────────────────────────────────────
+function shareApp() {
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: 'KiraKos', text: 'Kira kos sebenar setiap pancake. Free COGS calculator for F&B.', url }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(() => toast('Link copied'));
+  }
+}
+
+function shareItem(itemId) {
+  const item = state.items.find(i => i.id === itemId);
+  if (!item) return;
+  const bd = itemBreakdown(item);
+  const lines = [
+    `${item.name} — kos sebenar`,
+    ``,
+    `Sale: ${fmt(item.salePrice)}`,
+    `True cost: ${fmt(bd.totalCost)}`,
+    `Margin: ${fmt(bd.margin)} (${fmtPct(bd.marginPct)})`,
+    ``,
+    ...state.settings.platforms.map(p => {
+      const pm = platformMargin(item, p.commission);
+      return `${p.name} (-${p.commission}%): ${fmt(pm.margin)} margin`;
+    }),
+    ``,
+    `Calculated on KiraKos: ${window.location.href}`
+  ];
+  const text = lines.join('\n');
+  if (navigator.share) {
+    navigator.share({ title: item.name, text }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard'));
+  }
+}
+
+// ─── Banner dismiss ────────────────────────────────────────
+function dismissBanner() {
+  document.getElementById('welcomeBanner').style.display = 'none';
+  try { localStorage.setItem(BANNER_KEY, '1'); } catch(e){}
+}
+if (localStorage.getItem(BANNER_KEY) === '1') {
+  const b = document.getElementById('welcomeBanner');
+  if (b) b.style.display = 'none';
+}
+
+// ─── Toast ─────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ─── Init ──────────────────────────────────────────────────
+render();
+
+// Silent auto-sync on load if signed in
+if (isSignedIn() && SUPABASE_ENABLED) {
+  cloudPullAll();
+}
+
+// Prevent double-tap zoom
+let lastTap = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+</script>
+</body>
+</html>
